@@ -1,0 +1,116 @@
+{
+  "name": "ollama-copilot",
+  "displayName": "Ollama Copilot",
+  "publisher": "local",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "scripts": {
+    "compile": "tsc -p ./"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/index.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ollamaCopilot.generateCommitMessage",
+        "title": "Generate Commit Message",
+        "category": "Ollama Copilot",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "ollamaCopilot.switchModel",
+        "title": "Switch Model",
+        "category": "Ollama Copilot"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "ollamaCopilot.generateCommitMessage",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ollama Copilot",
+      "properties": {
+        "ollamaCopilot.endpoint": {
+          "type": "string",
+          "default": "http://localhost:8080",
+          "description": "Ollama Server"
+        },
+        "ollamaCopilot.model": {
+          "type": "string",
+          "default": "qwen",
+          "description": "Model to use (codellama, deepseek-coder, etc.)"
+        },
+        "ollamaCopilot.debounceMs": {
+          "type": "number",
+          "default": 300,
+          "description": "TTL before suggestion"
+        },
+        "ollamaCopilot.maxTokens": {
+          "type": "number",
+          "default": 128,
+          "description": "Max tokens suggestion"
+        },
+        "ollamaCopilot.temperature": {
+          "type": "number",
+          "default": 0.1,
+          "description": "TEMP"
+        },
+        "ollamaCopilot.fimMode": {
+          "type": "string",
+          "enum": ["auto", "codellama", "deepseek", "qwen", "starcoder", "none"],
+          "default": "qwen",
+          "description": "Fill-in-the-Middle format."
+        },
+        "ollamaCopilot.prefixLines": {
+          "type": "number",
+          "default": 60,
+          "description": "Context before cursor lines"
+        },
+        "ollamaCopilot.suffixLines": {
+          "type": "number",
+          "default": 20,
+          "description": "Context after cursor lines"
+        },
+        "ollamaCopilot.prefixMaxChars": {
+          "type": "number",
+          "default": 4000,
+          "description": "Max charaters prev to cursor"
+        },
+        "ollamaCopilot.suffixMaxChars": {
+          "type": "number",
+          "default": 1000,
+          "description": "Max charaters posta cursor"
+        },
+        "ollamaCopilot.useInfillEndpoint": {
+          "type": "boolean",
+          "default": false,
+          "description": "/infill endpoint of llama.cpp (The server choose the FIM format) instead to inject FIM on /completion"
+        },
+        "ollamaCopilot.commitMaxDiffChars": {
+          "type": "number",
+          "default": 8000,
+          "description": "Max characters of git diff"
+        },
+        "ollamaCopilot.commitMaxTokens": {
+          "type": "number",
+          "default": 200,
+          "description": "Max commit message characters"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "22.x",
+    "@types/vscode": "^1.118.0",
+    "typescript": "^6.0.3"
+  }
+}
