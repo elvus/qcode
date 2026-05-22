@@ -50,9 +50,10 @@ function resolveFimMode(mode: FimMode, modelName: string): Exclude<FimMode, 'aut
 	return 'none';
 }
 
-function buildFimPrompt(prefix: string, suffix: string, template: FimTemplate): string {
+function buildFimPrompt(prefix: string, suffix: string, template: FimTemplate, language: string): string {
 	if (!template.pre) { return prefix; }
-	return `${template.pre}${prefix}${template.suf}${suffix}${template.mid}`;
+	console.log(language)
+	return `${template.pre}// ${language}\n${prefix}${template.suf}${suffix}${template.mid}`;
 }
 
 // ── Context extraction ───────────────────────────────────────────────────
@@ -208,7 +209,7 @@ function cleanCommitMessage(raw: string): string {
 }
 
 async function requestCommitMessage(diff: string, token: vscode.CancellationToken): Promise<string | null> {
-	const { endpoint, commitMaxDiffChars, commitMaxTokens } = getConfig();
+	const { endpoint, commitMaxDiffChars } = getConfig();
 	const controller = new AbortController();
 	token.onCancellationRequested(() => controller.abort());
 
@@ -218,10 +219,9 @@ async function requestCommitMessage(diff: string, token: vscode.CancellationToke
 		signal: controller.signal,
 		body: JSON.stringify({
 			prompt: buildCommitPrompt(diff, commitMaxDiffChars),
-			n_predict: commitMaxTokens,
-			temperature: 0.3,
-			stop: ['\n###', '### '],
-			stream: false,
+			n_predict: 64,
+			temperature: 0.1,
+			stop: ['\n']
 		}),
 	});
 
@@ -300,6 +300,7 @@ class OllamaInlineProvider implements vscode.InlineCompletionItemProvider {
 		const controller = new AbortController();
 		this._inFlight.set(key, controller);
 		const cancelSub = token.onCancellationRequested(() => controller.abort());
+		const language = document.languageId;
 
 		try {
 			// Don't suggest in the middle of a word — the model would compete with the user's typing.
@@ -327,7 +328,7 @@ class OllamaInlineProvider implements vscode.InlineCompletionItemProvider {
 
 			const body: object = cfg.useInfillEndpoint
 				? { input_prefix: prefix, input_suffix: suffix }
-				: { prompt: buildFimPrompt(prefix, suffix, template) };
+				: { prompt: buildFimPrompt(prefix, suffix, template, language) };
 
 			const raw = await queryLlama(
 				cfg.endpoint, body, stops,
